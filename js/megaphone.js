@@ -25,6 +25,22 @@
       .attr("width", width)
       .attr("height", height);
   
+    // mousewheel scroll ZOOM!
+    $('#d3-map').mousewheel(function (event, delta, deltaX, deltaY) {
+      var s = projection.scale();
+      if (delta > 0) {
+        projection.scale(s * 1.1);
+      }
+      else {
+        projection.scale(s * 0.9);
+      }
+      
+      d3.selectAll('.tweets')
+        .attr("transform", function(d) { return "translate(" + projection([d.graphic.geometry.x,d.graphic.geometry.y]) + ")";})
+      
+      svg.selectAll("path").attr("d", path);
+    });
+  
     addGeoms();
   }
     
@@ -36,7 +52,6 @@
   function addGeoms() {
     //add countries
     d3.json("data/world.json", function(error, world) {
-      console.log('world', world)
       svg.insert("path")
         .datum(topojson.object(world, world.objects.world))
         .attr("class", "land")
@@ -52,7 +67,7 @@
   
   function tweets( m ) {
     var scale = d3.scale.linear()
-      .domain([1,6000])
+      .domain([1,10000])
       .range([1,50]);
       
     var tweets = svg.append('g');
@@ -71,8 +86,8 @@
         .duration(400)
         .attr('r', 3)
      
-     console.log('m', m)
-     $('#info-window').html(m.graphic.attributes.text).show();
+     var t = '<div class="message">'+ m.graphic.attributes.text + '</div>'; 
+     $('#info-window').show().append( t )
   }
   
   
