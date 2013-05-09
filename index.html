@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Create a Map</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=7, IE=9, IE=10">
+  <link rel="stylesheet" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.5/js/dojo/dijit/themes/claro/claro.css">
+  <link rel="stylesheet" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.5/js/esri/css/esri.css">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    html, body, #mapDiv{
+      padding: 0;
+      margin: 0;
+      height: 100%;
+    }
+  </style>
+
+  <script src="http://serverapi.arcgisonline.com/jsapi/arcgis/3.5/"></script>
+  <script>
+    var map;
+    require(["esri/map", "esri/layers/StreamLayer", "dojo/domReady!"], function(Map, StreamLayer) {
+      map = new Map("mapDiv", {
+        center: [-56.049, 38.485],
+        zoom: 3,
+        basemap: "gray"
+      });
+
+      var featureCollection = {
+        "layerDefinition": null,
+        "featureSet": {
+          "features": [],
+          "geometryType": "esriGeometryPoint"
+        }
+      }
+
+      featureCollection.layerDefinition = {
+        "geometryType": "esriGeometryPoint",
+        "objectIdField": "id",
+        "fields": [{
+          "name": "id",
+          "alias": "id",
+          "type": "esriFieldTypeOID"
+        }]
+      };
+
+      streamLayer = new StreamLayer( featureCollection, {
+        socketUrl: "ws://socialdev.rdcwdc.esri.com:8080/spicket/socket",
+        purgeOptions: { displayCount: 1000 }
+      });
+
+      var renderer = new esri.renderer.SimpleRenderer(
+        new esri.symbol.SimpleMarkerSymbol(esri.symbol.SimpleMarkerSymbol.STYLE_CIRCLE, 10,
+        new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID,
+        new dojo.Color( [255, 255, 255, 1] ), .5),
+        new dojo.Color( [0, 200, 150] )
+      ));
+
+      streamLayer.setRenderer( renderer );
+
+      map.addLayer( streamLayer );
+      
+      dojo.connect( streamLayer, 'onMessage', function(m) {
+        console.log('message', m)
+      });
+
+    });
+  </script>
+
+</head>
+<body class="claro">
+  <div id="mapDiv"></div>
+  <div id="d3-map"></div>
+</body>
+<script src="js/d3.js"></script>
+<script src="js/d3.geo.js"></script>
+<script src="js/d3.geo.projection.v0.min.js"></script>
+<script src="js/megaphone.js"></script>
+</html>
