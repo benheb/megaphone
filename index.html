@@ -60,7 +60,7 @@
       map.addLayer( streamLayer );
       
       dojo.connect( streamLayer, 'onMessage', function(m) {
-        console.log('message', m)
+        tweets( m )
       });
 
     });
@@ -71,8 +71,16 @@
   <div id="mapDiv"></div>
   <div id="d3-map"></div>
 </body>
-<script src="js/d3.js"></script>
-<script src="js/d3.geo.js"></script>
-<script src="js/d3.geo.projection.v0.min.js"></script>
+<script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+<script type="text/javascript" src="http://d3js.org/d3.geo.projection.v0.min.js"></script>
+<script type="text/javascript" src="http://d3js.org/topojson.v0.min.js"></script>
+
+<script type="text/javascript" src="js/jquery-1.8.3.js"></script>
+<script type="text/javascript" src="js/mousewheel.js"></script>
 <script src="js/megaphone.js"></script>
+<script>
+  $(document).ready(function() {
+    init();
+  });
+</script>
 </html>

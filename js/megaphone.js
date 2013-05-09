@@ -11,17 +11,14 @@
   
   function init() { 
     
-    setTimeout(function() {
-      $('#intro').fadeOut('slow');
-    },5000)
-    
-    var width = 800,
-      height = 750;
+    var width = document.width,
+      height = document.height;
       
     projection = d3.geo.orthographic()
-      .scale(240)
-      .translate([width / 2, height / 2.9])
+      .scale(400)
+      .translate([width / 2, height / 2])
       .clipAngle(90)
+      .rotate([100, -20])
       .precision(0);
     
     path = d3.geo.path()
@@ -59,7 +56,7 @@
     });
    
     // mousewheel scroll
-    $('#map').mousewheel(function (event, delta, deltaX, deltaY) {
+    $('#d3-map').mousewheel(function (event, delta, deltaX, deltaY) {
       var s = projection.scale();
       if (delta > 0) {
         projection.scale(s * 1.1);
@@ -80,16 +77,27 @@
    */
   function addGeoms() {
     //add countries
-    d3.json("world-110m.json", function(error, world) {
+    d3.json("data/world-110m.json", function(error, world) {
       svg.append("path")
         .datum(topojson.object(world, world.objects.land))
         .attr("class", "land")
-        .attr("d", path)
-        .attr("d", temps);
+        .attr("d", path);
+        
+      //tweets();
     });
   }
   
-  
+  function tweets( m ) {
+    var tweets = svg.append('g');
+    
+    tweets.selectAll("circle")
+      .data([ m ])
+    .enter().insert("circle")
+      .attr("transform", function(d) { return "translate(" + projection([d.graphic.geometry.x,d.graphic.geometry.y]) + ")";})
+      .attr("fill", '#fff')
+      .attr('class', 'tweets')
+      .attr('r', 2);
+  }
   
   
   /*

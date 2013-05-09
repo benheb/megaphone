@@ -1,10 +1,17 @@
+body {
+  background:#000;
+}
 #mapDiv {
   height:200px !important;
   width:100%;
+  display:none;
 }
 
 #d3-map {
-  height:500px;
+  height:100%;
   width:100%;
-  border:1px solid red;
+}
+
+.land {
+  fill: #444;
 }
