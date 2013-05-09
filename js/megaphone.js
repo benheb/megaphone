@@ -4,10 +4,7 @@
     cities,
     svg,
     path,
-    φ,
-    λ,
-    down,
-    stepInterval = null;
+    scale;
   
   function init() { 
     
@@ -15,58 +12,19 @@
       height = document.height;
       
     projection = d3.geo.orthographic()
-      .scale(400)
+      .scale(1000)
       .translate([width / 2, height / 2])
       .clipAngle(90)
-      .rotate([100, -20])
+      .rotate([120, -37])
       .precision(0);
     
     path = d3.geo.path()
       .projection(projection);
     
-    λ = d3.scale.linear()
-      .domain([0, width])
-      .range([-180, 180]);
-    
-    φ = d3.scale.linear()
-      .domain([0, height])
-      .range([90, -90]);
-  
     svg = d3.select("#d3-map").append("svg")
       .attr("width", width)
       .attr("height", height);
-    
-    down = false;
-    svg.on('mousedown', function() {
-      down = true;
-    });
-    
-    svg.on('mouseup', function() {
-      down = false;
-    });
-    
-    svg.on("mousemove", function() {
-      if (!down) return;
-      var p = d3.mouse(this);
-      projection.rotate([λ(p[0]), φ(p[1])]);
-      d3.selectAll("circle")
-        .attr("transform", function(d) {return "translate(" + projection([d.geometry.coordinates[0],d.geometry.coordinates[1]]) + ")";  })
-        .attr('d', updateLine)
-      svg.selectAll("path").attr("d", path);
-    });
-   
-    // mousewheel scroll
-    $('#d3-map').mousewheel(function (event, delta, deltaX, deltaY) {
-      var s = projection.scale();
-      if (delta > 0) {
-        projection.scale(s * 1.1);
-      }
-      else {
-        projection.scale(s * 0.9);
-      }
-      svg.selectAll("path").attr("d", path);
-    });
-    
+  
     addGeoms();
   }
     
@@ -77,26 +35,44 @@
    */
   function addGeoms() {
     //add countries
-    d3.json("data/world-110m.json", function(error, world) {
-      svg.append("path")
-        .datum(topojson.object(world, world.objects.land))
+    d3.json("data/world.json", function(error, world) {
+      console.log('world', world)
+      svg.insert("path")
+        .datum(topojson.object(world, world.objects.world))
         .attr("class", "land")
         .attr("d", path);
+      
+      svg.insert("path")
+        .datum(topojson.object(world, world.objects.counties))
+        .attr("class", "land counties")
+        .attr("d", path);
         
-      //tweets();
     });
   }
   
   function tweets( m ) {
+    var scale = d3.scale.linear()
+      .domain([1,6000])
+      .range([1,50]);
+      
     var tweets = svg.append('g');
     
     tweets.selectAll("circle")
       .data([ m ])
     .enter().insert("circle")
       .attr("transform", function(d) { return "translate(" + projection([d.graphic.geometry.x,d.graphic.geometry.y]) + ")";})
-      .attr("fill", '#fff')
+      .attr("fill", styler)
       .attr('class', 'tweets')
-      .attr('r', 2);
+      .attr('r', 1)
+      .transition()
+        .duration(1000)
+        .attr('r', function(d) { return scale( d.graphic.attributes.user_followers ) })
+      .transition()
+        .duration(400)
+        .attr('r', 3)
+     
+     console.log('m', m)
+     $('#info-window').html(m.graphic.attributes.text).show();
   }
   
   
@@ -120,43 +96,43 @@
    * 
    */
   function styler( data ) {
-    var temp = data.properties.temperature;
+    var followers = data.graphic.attributes.user_followers;
     var colors = ["rgb(78,0,0)", "rgb(103,0,31)", "rgb(178,24,43)", "rgb(214,96,77)", "rgb(244,165,130)", "rgb(253,219,199)", "rgb(247,247,247)", "rgb(209,229,240)", "rgb(146,197,222)", "rgb(67,147,195)", "rgb(33,102,172)", "rgb(5,48,97)"] 
     colors = colors.reverse();
     var color;
     
     switch ( true ) {
-      case ( temp < -10 ) :
+      case ( followers < 10 ) :
         color = colors[0];
         break;
-      case ( temp < 0 ) :
+      case ( followers < 30 ) :
         color = colors[1];
         break;
-      case ( temp < 15 ) : 
+      case ( followers < 60 ) : 
         color = colors[2]
         break;
-      case ( temp < 30 ) : 
+      case ( followers < 100 ) : 
         color = colors[3]
         break;
-      case ( temp < 40 ) : 
+      case ( followers < 130 ) : 
         color = colors[4]
         break;
-      case ( temp < 50 ) : 
+      case ( followers < 160 ) : 
         color = colors[5]
         break;
-      case ( temp < 50 ) : 
+      case ( followers < 200 ) : 
         color = colors[6]
         break;
-      case ( temp < 60 ) : 
+      case ( followers < 400 ) : 
         color = colors[7]
         break;
-      case ( temp < 70 ) : 
+      case ( followers < 600 ) : 
         color = colors[8]
         break;
-      case ( temp < 80 ) : 
+      case ( followers < 1200 ) : 
         color = colors[9]
         break;
-      case ( temp > 80 ) : 
+      case ( followers > 1200 ) : 
         color = colors[10]
         break;
     }
