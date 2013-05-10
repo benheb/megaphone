@@ -70,19 +70,21 @@
       // 2. Specify the date/time for the search to start from
       // 3. Start and stop the service at will
       var exp = buildRegx("Food Lunch Dinner Beer Wine Sushi San Francisco", true);
+      var sensorExp = buildRegx("Fuck Shit Ass Asshole Slut Cunt Cock Pussy Cock Tit Tits Boobs Dick Penis Orgasm Porn Sex Jerk Idiot Bitch Butt Dyke Fag Gay Jerk Negro Nigger Nig Pecker Queer Erection Twats Vagina Whore", true);
+
       console.log(exp);
 
       dojo.connect( streamLayer, 'onMessage', function(m) {
         console.log(m.graphic.attributes.text);
-        if (m.graphic.attributes.text.match(exp)) {
+        if (m.graphic.attributes.text.match(exp) && !m.graphic.attributes.text.match(sensorExp)) {
           addTweets( m )
         } else {
           map.graphics.remove( m.graphic );
         }
       });
 
-      function buildRegx(str, anyWord) {
-        var exp = function (t) {
+      function buildRegx( str, anyWord ) {
+        var exp = function ( t ) {
           return "(?=.*\\b"+t+"\\b)";
         }
         var spl = str.split(" ");
@@ -92,7 +94,7 @@
         }
         return "/"+q+"/i"; 
       }
-      
+
     });
   </script>
 
