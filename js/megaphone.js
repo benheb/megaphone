@@ -65,7 +65,7 @@
     });
   }
   
-  function tweets( m ) {
+  function addTweets( m ) {
     var scale = d3.scale.linear()
       .domain([1,10000])
       .range([1,50]);
