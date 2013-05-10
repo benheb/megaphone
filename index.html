@@ -18,7 +18,7 @@
   <script src="http://serverapi.arcgisonline.com/jsapi/arcgis/3.5/"></script>
   <script>
     var map;
-    require(["esri/map", "esri/layers/StreamLayer", "dojo/domReady!"], function(Map, StreamLayer) {
+    require(["esri/map", "esri/layers/StreamLayer", "esri/layers/FeatureLayer", "dojo/domReady!"], function(Map, StreamLayer, FeatureLayer) {
       map = new Map("mapDiv", {
         center: [-56.049, 38.485],
         zoom: 3,
@@ -27,6 +27,7 @@
 
       var featureCollection = {
         "layerDefinition": null,
+        //"layerDefinition": ["text = 'Obama'"],
         "featureSet": {
           "features": [],
           "geometryType": "esriGeometryPoint"
@@ -40,13 +41,17 @@
           "name": "id",
           "alias": "id",
           "type": "esriFieldTypeOID"
-        }]
+        }]//,
+        //"definitionExpression":"text = 'Obama'"
       };
 
       streamLayer = new StreamLayer( featureCollection, {
         socketUrl: "ws://socialdev.rdcwdc.esri.com:8080/spicket/socket",
-        purgeOptions: { displayCount: 1000 }
+        purgeOptions: { displayCount: 1000000 }
+        //keywords: ["Obama"]
       });
+
+      //streamLayer.setDefinitionExpression("text = 'Obama'");
 
       var renderer = new esri.renderer.SimpleRenderer(
         new esri.symbol.SimpleMarkerSymbol(esri.symbol.SimpleMarkerSymbol.STYLE_CIRCLE, 10,
@@ -58,16 +63,54 @@
       streamLayer.setRenderer( renderer );
 
       map.addLayer( streamLayer );
-      
+
+      // ALs - Super cheesy post-stream query filter
+      // NOTE: We should really be able to:
+      // 1. Pass the SQL query and extent/polygon to StreamLayer when we create it (see my tries above)
+      // 2. Specify the date/time for the search to start from
+      // 3. Start and stop the service at will
+      var exp = buildRegx("Food Lunch Dinner Beer Wine Sushi San Francisco", true);
+      console.log(exp);
+
       dojo.connect( streamLayer, 'onMessage', function(m) {
-        tweets( m )
+        console.log(m.graphic.attributes.text);
+        if (m.graphic.attributes.text.match(exp)) {
+          addTweets( m )
+        } else {
+          map.graphics.remove( m.graphic );
+        }
       });
 
+      function buildRegx(str, anyWord) {
+        var exp = function (t) {
+          return "(?=.*\\b"+t+"\\b)";
+        }
+        var spl = str.split(" ");
+        var q = "";
+        for (var i=0; i < spl.length; i++) {
+          q = q + exp(spl[i]) + (anyWord && (i<spl.length-1) ? "|":""); 
+        }
+        return "/"+q+"/i"; 
+      }
+      
     });
   </script>
 
 </head>
 <body class="claro">
+  <div id="banner" dojotype="dijit.layout.BorderContainer" gutters="false" region="top" class="dijitBorderContainerNoGutter dijitContainer dijitBorderContainerNoGutter-child dijitBorderContainerNoGutter-dijitBorderContainerNoGutter dijitBorderContainerNoGutterPane dijitAlignTop dijitLayoutContainer" widgetid="banner" style="left: 0px; top: 0px; position: absolute; padding: 0px; width: 1345px; height: 115px;">  
+    <!--Header-->
+    <div id="headerArea" dojotype="dijit.layout.BorderContainer" region="top" class="dijitBorderContainer dijitContainer dijitBorderContainerNoGutter-child dijitBorderContainerNoGutter-dijitBorderContainer dijitBorderContainerNoGutterPane dijitAlignTop dijitLayoutContainer" widgetid="headerArea" style="left: 0px; top: 0px; position: absolute; padding: 0px; width: 1345px;">
+      <div id="titleText" dojotype="dijit.layout.ContentPane" region="center" class="dijitContentPane dijitBorderContainer-child dijitBorderContainer-dijitContentPane dijitBorderContainerPane dijitAlignCenter" title="" role="group" widgetid="titleText" style="left: 25px; top: 20px; position: absolute; width: 1140px; height: 95px;">
+        <h1 id="title"><span style="color:red">TopTen</span> most damaging U.S. hurricanes of all time</h1>
+        <p id="subtitle">What were the worst hurricanes ever? What would happen if they hit today? A NOAA study examined these questions, and came up with this rogue’s gallery of mega-storms.</p>
+      </div><!--/titleText-->
+      <div id="logoArea" dojotype="dijit.layout.ContentPane" region="right" class="dijitContentPane dijitBorderContainer-child dijitBorderContainer-dijitContentPane dijitBorderContainerPane dijitAlignRight" title="" role="group" widgetid="logoArea" style="left: 1170px; top: 20px; position: absolute; height: 95px;">
+        <div id="social"><a id="smLink" href="http://storymaps.esri.com" target="_blank">A story map </a><span class="st_facebook" st_processed="yes"><span style="text-decoration: none; color: rgb(0, 0, 0); display: inline-block; cursor: pointer; padding-left: 0px; padding-right: 0px; width: 16px;" class="stButton"><span class="chicklets facebook">&nbsp;</span><img src="http://w.sharethis.com/images/check-small.png" style="position: absolute; top: -6px; right: -7px; width: 13px; height: 13px; max-width: 13px; max-height: 13px; display: none;"></span></span><span class="st_twitter" st_processed="yes"><span style="text-decoration: none; color: rgb(0, 0, 0); display: inline-block; cursor: pointer; padding-left: 0px; padding-right: 0px; width: 16px;" class="stButton"><span class="chicklets twitter">&nbsp;</span><img src="http://w.sharethis.com/images/check-small.png" style="position: absolute; top: -6px; right: -7px; width: 13px; height: 13px; max-width: 13px; max-height: 13px; display: none;"></span></span></div>
+        <div id="logo"><a id="logoLink" href="http://www.esri.com" target="_blank"><img id="logoImg" src="images/esriGlobeLogow.png" alt="Esri - Home"></a></div>          
+      </div><div class="dijitGutter dijitGutterV dijitAlignRight" role="presentation" id="logoArea_splitter" widgetid="logoArea_splitter" style="left: 1165px; top: 20px; position: absolute; height: 95px;"></div><!--/logoArea-->
+    </div><!--/header-->
+  </div>
   <div id="mapDiv"></div>
   <div id="d3-map"></div>
   <div id="info-window"></div>
