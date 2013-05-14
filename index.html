@@ -64,8 +64,8 @@
         //}
       });
 
-      function buildRegx(str, anyWord) {
-        var exp = function (t) {
+      function buildRegx( str, anyWord ) {
+        var exp = function ( t ) {
           return "(?=.*\\b"+t+"\\b)";
         }
         var spl = str.split(" ");
@@ -75,8 +75,7 @@
         }
         return "/"+q+"/i"; 
       }
-      
-      
+
     });
   </script>
 
