@@ -25,60 +25,43 @@
         basemap: "gray"
       });
 
-      var featureCollection = {
-        "layerDefinition": null,
-        //"layerDefinition": ["text = 'Obama'"],
-        "featureSet": {
-          "features": [],
-          "geometryType": "esriGeometryPoint"
-        }
-      }
-
-      featureCollection.layerDefinition = {
-        "geometryType": "esriGeometryPoint",
-        "objectIdField": "id",
-        "fields": [{
-          "name": "id",
-          "alias": "id",
-          "type": "esriFieldTypeOID"
-        }]//,
-        //"definitionExpression":"text = 'Obama'"
-      };
-
-      streamLayer = new StreamLayer( featureCollection, {
-        socketUrl: "ws://socialdev.rdcwdc.esri.com:8080/spicket/socket",
-        purgeOptions: { displayCount: 1000000 }
-        //keywords: ["Obama"]
+      //create stream in Alto, add stream id here
+      //stream ID
+      var id = "stream_84226"; 
+      var streamLayer = new StreamLayer( "http://socialdev.dc.esri.com/admin/services/"+id+"/FeatureServer/0", {
+        purgeOptions: { displayCount: 1000}
       });
-
-      //streamLayer.setDefinitionExpression("text = 'Obama'");
-
-      var renderer = new esri.renderer.SimpleRenderer(
-        new esri.symbol.SimpleMarkerSymbol(esri.symbol.SimpleMarkerSymbol.STYLE_CIRCLE, 10,
-        new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID,
-        new dojo.Color( [255, 255, 255, 1] ), .5),
-        new dojo.Color( [0, 200, 150] )
-      ));
-
-      streamLayer.setRenderer( renderer );
-
+      
       map.addLayer( streamLayer );
-
-      // ALs - Super cheesy post-stream query filter
-      // NOTE: We should really be able to:
-      // 1. Pass the SQL query and extent/polygon to StreamLayer when we create it (see my tries above)
-      // 2. Specify the date/time for the search to start from
-      // 3. Start and stop the service at will
-      var exp = buildRegx("Food Lunch Dinner Beer Wine Sushi San Francisco", true);
-      console.log(exp);
-
+      console.log('streamLayer', streamLayer)
+      
+      /** KEYWORDS **/ 
+      setTimeout(function(){
+        if (!streamLayer.templates){
+          setTimeout(arguments.callee, 25);
+          return;
+        } 
+        // else 
+        var description = streamLayer.templates[0].description.split('keywords')[1].split('from')[0].split(',');
+        $.each(description, function(i,f) {
+          if (f === ' ') return;
+          f = f.replace(/\s+/g, '');
+          f = f.replace(/#/g, '');
+          var keywords = "<div class='keyword'><a href='http://www.twitter.com/#"+f+"'>#"+f+"</a></div>";
+          $('#keywords').append(keywords);
+        })
+      }, 0)
+      
+      /** ADD TWEETS **/
+      //var exp = buildRegx("Food Lunch Dinner Beer Wine Sushi San Francisco The Weather", true);
+      //shouldn't need exp now, since we are pulling from alto with keywords #io13, #googleio, #dev
       dojo.connect( streamLayer, 'onMessage', function(m) {
-        console.log(m.graphic.attributes.text);
-        if (m.graphic.attributes.text.match(exp)) {
+        console.log(m.graphic);
+        //if (m.graphic.attributes.content.match(exp)) {
           addTweets( m )
-        } else {
-          map.graphics.remove( m.graphic );
-        }
+        //} else {
+        //  map.graphics.remove( m.graphic );
+        //}
       });
 
       function buildRegx(str, anyWord) {
@@ -93,12 +76,13 @@
         return "/"+q+"/i"; 
       }
       
+      
     });
   </script>
 
 </head>
 <body class="claro">
-  <div id="banner" dojotype="dijit.layout.BorderContainer" gutters="false" region="top" class="dijitBorderContainerNoGutter dijitContainer dijitBorderContainerNoGutter-child dijitBorderContainerNoGutter-dijitBorderContainerNoGutter dijitBorderContainerNoGutterPane dijitAlignTop dijitLayoutContainer" widgetid="banner" style="left: 0px; top: 0px; position: absolute; padding: 0px; width: 1345px; height: 115px;">  
+  <div style="display:none" id="banner" dojotype="dijit.layout.BorderContainer" gutters="false" region="top" class="dijitBorderContainerNoGutter dijitContainer dijitBorderContainerNoGutter-child dijitBorderContainerNoGutter-dijitBorderContainerNoGutter dijitBorderContainerNoGutterPane dijitAlignTop dijitLayoutContainer" widgetid="banner" style="left: 0px; top: 0px; position: absolute; padding: 0px; width: 1345px; height: 115px;">  
     <!--Header-->
     <div id="headerArea" dojotype="dijit.layout.BorderContainer" region="top" class="dijitBorderContainer dijitContainer dijitBorderContainerNoGutter-child dijitBorderContainerNoGutter-dijitBorderContainer dijitBorderContainerNoGutterPane dijitAlignTop dijitLayoutContainer" widgetid="headerArea" style="left: 0px; top: 0px; position: absolute; padding: 0px; width: 1345px;">
       <div id="titleText" dojotype="dijit.layout.ContentPane" region="center" class="dijitContentPane dijitBorderContainer-child dijitBorderContainer-dijitContentPane dijitBorderContainerPane dijitAlignCenter" title="" role="group" widgetid="titleText" style="left: 25px; top: 20px; position: absolute; width: 1140px; height: 95px;">
@@ -114,6 +98,7 @@
   <div id="mapDiv"></div>
   <div id="d3-map"></div>
   <div id="info-window"></div>
+  <div id="keywords"></div>
   <div id="legend">
     <div id="legend-title">Number of Followers</div>
    <div style="background:rgb(5,48,97)" class="legend-item"></div>

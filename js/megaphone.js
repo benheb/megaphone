@@ -71,7 +71,6 @@
       .range([1,50]);
       
     var tweets = svg.append('g');
-    
     tweets.selectAll("circle")
       .data([ m ])
     .enter().insert("circle")
@@ -81,12 +80,12 @@
       .attr('r', 1)
       .transition()
         .duration(1000)
-        .attr('r', function(d) { return scale( d.graphic.attributes.user_followers ) })
+        .attr('r', function(d) { return scale( d.graphic.attributes.payload_followers ) })
       .transition()
         .duration(400)
         .attr('r', 3)
      
-     var t = '<div class="message">'+ m.graphic.attributes.text + '</div>'; 
+     var t = '<div class="message">'+ m.graphic.attributes.content + '</div>'; 
      $('#info-window').show().append( t )
   }
   
@@ -111,7 +110,7 @@
    * 
    */
   function styler( data ) {
-    var followers = data.graphic.attributes.user_followers;
+    var followers = data.graphic.attributes.payload_followers;
     var colors = ["rgb(78,0,0)", "rgb(103,0,31)", "rgb(178,24,43)", "rgb(214,96,77)", "rgb(244,165,130)", "rgb(253,219,199)", "rgb(247,247,247)", "rgb(209,229,240)", "rgb(146,197,222)", "rgb(67,147,195)", "rgb(33,102,172)", "rgb(5,48,97)"] 
     colors = colors.reverse();
     var color;

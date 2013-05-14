@@ -53,24 +53,52 @@ body {
 
 .legend-item {
   float: left;
-  width: 20px;
+  width: 29px;
   height: 20px;
-  border: 1px solid #777;
-  margin-right: 7px;
 }
 
 #legend-title {
-  color: #EEE;
+  color: #AAA;
   margin-bottom: 6px;
+  font-size: 12pt;
 }
 
 #legend-max {
   position: absolute;
-  right: 19px;
-  bottom: -3px;
+  right: 13px;
+  bottom: 2px;
   color: #999;
+  font-size: 9pt;
 }
 
 #legend-min {
   color: #999;
+  position: absolute;
+  right: 340px;
+  bottom: 2px;
+  color: #999;
+  font-size: 9pt;
+}
+
+#keywords {
+  position:absolute;
+  right:10px;
+  top:10px;
+  height:20px;
+}
+
+#keywords a {
+  color:#FEFEFE;
+  text-decoration:none;
+}
+
+#keywords a:hover {
+  color:#eee;
+  text-decoration:underline;
+}
+
+.keyword {
+  float: left;
+  margin-right: 10px;
+  font-size: 14pt;
 }
